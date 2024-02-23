@@ -1,6 +1,7 @@
 # ROS2 KUKA Drivers
 
 This repository contains ROS2 drivers for all KUKA operating systems.
+This repository was forked from kroshu/kuka_drivers and includes modifications to enable 7th axis (linear rail) control over RSI.
 
 Github CI | SonarCloud
 ------------| ---------------
