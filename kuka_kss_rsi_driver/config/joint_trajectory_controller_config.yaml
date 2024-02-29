@@ -1,6 +1,7 @@
 joint_trajectory_controller:
   ros__parameters:
     joints:
+    - joint_0
     - joint_1
     - joint_2
     - joint_3

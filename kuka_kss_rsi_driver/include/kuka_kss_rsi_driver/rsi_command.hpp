@@ -38,6 +38,7 @@ public:
     el->SetAttribute("A4", std::to_string(joint_position_correction[3]));
     el->SetAttribute("A5", std::to_string(joint_position_correction[4]));
     el->SetAttribute("A6", std::to_string(joint_position_correction[5]));
+    el->SetAttribute("E1", std::to_string(joint_position_correction[6]));
     root->LinkEndChild(el);
 
     el = new TiXmlElement("Stop");
