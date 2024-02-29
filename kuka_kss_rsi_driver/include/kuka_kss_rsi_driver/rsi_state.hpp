@@ -44,6 +44,9 @@ public:
     AIPos_el->Attribute("A4", &positions[3]);
     AIPos_el->Attribute("A5", &positions[4]);
     AIPos_el->Attribute("A6", &positions[5]);
+    // Extract linear rail actual position
+    TiXmlElement * EIPos_el = rob->FirstChildElement("EIPos");
+    EIPos_el->Attribute("E1", &positions[6]);
     // Extract axis specific setpoint position
     TiXmlElement * ASPos_el = rob->FirstChildElement("ASPos");
     ASPos_el->Attribute("A1", &initial_positions[0]);
@@ -52,6 +55,9 @@ public:
     ASPos_el->Attribute("A4", &initial_positions[3]);
     ASPos_el->Attribute("A5", &initial_positions[4]);
     ASPos_el->Attribute("A6", &initial_positions[5]);
+    //Extract axis specific setpoint position
+    TiXmlElement * ESPos_el = rob->FirstChildElement("ESPos");
+    ESPos_el->Attribute("E1", &initial_positions[6]);
     // Extract cartesian actual position
     TiXmlElement * RIst_el = rob->FirstChildElement("RIst");
     RIst_el->Attribute("X", &cart_position[0]);
@@ -73,8 +79,8 @@ public:
     ipoc = std::stoull(ipoc_el->FirstChild()->Value());
   }
 
-  std::vector<double> positions = std::vector<double>(6, 0.0);
-  std::vector<double> initial_positions = std::vector<double>(6, 0.0);
+  std::vector<double> positions = std::vector<double>(7, 0.0);
+  std::vector<double> initial_positions = std::vector<double>(7, 0.0);
   std::vector<double> cart_position = std::vector<double>(6, 0.0);
   std::vector<double> initial_cart_position = std::vector<double>(6, 0.0);
   uint64_t ipoc = 0;
