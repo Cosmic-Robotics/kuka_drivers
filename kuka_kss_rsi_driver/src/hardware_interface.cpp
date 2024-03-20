@@ -111,7 +111,7 @@ CallbackReturn KukaRSIHardwareInterface::on_activate(const rclcpp_lifecycle::Sta
   stop_flag_ = false;
   // Wait for connection from robot
   server_.reset(new UDPServer(rsi_ip_address_, rsi_port_));
-  server_->set_timeout(10000);  // Set receive timeout to 10 seconds for activation
+  server_->set_timeout(60000);  // Set receive timeout to 60 seconds for activation
 
   RCLCPP_INFO(rclcpp::get_logger("KukaRSIHardwareInterface"), "Connecting to robot . . .");
 
@@ -138,6 +138,12 @@ CallbackReturn KukaRSIHardwareInterface::on_activate(const rclcpp_lifecycle::Sta
     hw_commands_[i] = hw_states_[i];
     initial_joint_pos_[i] = rsi_state_.initial_positions[i] * KukaRSIHardwareInterface::D2R;
   }
+
+  // Convert 7th axis back to meters
+  hw_states_[6] = hw_states_[6] / KukaRSIHardwareInterface::D2R / 1000;
+  hw_commands_[6] = hw_commands_[6] / KukaRSIHardwareInterface::D2R / 1000;
+  initial_joint_pos_[6] = initial_joint_pos_[6] / KukaRSIHardwareInterface::D2R / 1000;
+
   ipoc_ = rsi_state_.ipoc;
 
   out_buffer_ = RSICommand(joint_pos_correction_deg_, ipoc_, stop_flag_).xml_doc;
@@ -177,6 +183,9 @@ return_type KukaRSIHardwareInterface::read(const rclcpp::Time &, const rclcpp::D
   {
     hw_states_[i] = rsi_state_.positions[i] * KukaRSIHardwareInterface::D2R;
   }
+
+  hw_states_[6] = hw_states_[6] / KukaRSIHardwareInterface::D2R / 1000; //Convert 7th axis back to meters
+
   ipoc_ = rsi_state_.ipoc;
   return return_type::OK;
 }
@@ -202,6 +211,8 @@ return_type KukaRSIHardwareInterface::write(const rclcpp::Time &, const rclcpp::
     joint_pos_correction_deg_[i] =
       (hw_commands_[i] - initial_joint_pos_[i]) * KukaRSIHardwareInterface::R2D;
   }
+  
+  joint_pos_correction_deg_[6] = joint_pos_correction_deg_[6] / KukaRSIHardwareInterface::R2D * 1000; //Convert 7th axis back to meters
 
   out_buffer_ = RSICommand(joint_pos_correction_deg_, ipoc_, stop_flag_).xml_doc;
   server_->send(out_buffer_);

@@ -2,7 +2,10 @@ controller_manager:
   ros__parameters:
     update_rate: 250  # Hz
 
-    joint_trajectory_controller:
+    kuka_kr60_arm_controller: #joint_trajectory_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    kuka_track_controller: #joint_trajectory_controller:
       type: joint_trajectory_controller/JointTrajectoryController
 
     joint_state_broadcaster:
