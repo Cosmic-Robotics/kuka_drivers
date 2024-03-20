@@ -216,6 +216,9 @@ return_type KukaRSIHardwareInterface::write(const rclcpp::Time &, const rclcpp::
 
   out_buffer_ = RSICommand(joint_pos_correction_deg_, ipoc_, stop_flag_).xml_doc;
   server_->send(out_buffer_);
+  server_->send(out_buffer_);
+  server_->send(out_buffer_);
+  RCLCPP_INFO(rclcpp::get_logger("KukaRSIHardwareInterface"), "%s", out_buffer_.c_str());
   return return_type::OK;
 }
 }  // namespace kuka_kss_rsi_driver
