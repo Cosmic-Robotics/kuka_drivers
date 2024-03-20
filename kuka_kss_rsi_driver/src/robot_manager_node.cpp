@@ -15,6 +15,7 @@
 #include "communication_helpers/ros2_control_tools.hpp"
 #include "communication_helpers/service_tools.hpp"
 
+#include "kuka_drivers_core/controller_names.hpp"
 #include "kuka_kss_rsi_driver/robot_manager_node.hpp"
 
 using namespace controller_manager_msgs::srv;  // NOLINT
