@@ -8,7 +8,3 @@ repositories:
     type: git
     url: https://github.com/kroshu/kuka_controllers.git
     version: master
-  kuka-external-control-sdk:
-    type: git
-    url: https://github.com/kroshu/kuka-external-control-sdk.git
-    version: 403115ce9a76523487b7f72db186375920900b78
