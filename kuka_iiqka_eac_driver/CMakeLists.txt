@@ -24,7 +24,7 @@ find_package(kuka_drivers_core REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(controller_manager_msgs REQUIRED)
-find_package(kuka-external-control-sdk CONFIG REQUIRED)
+find_package(kuka_external_control_sdk CONFIG REQUIRED)
 include_directories(include)
 
 
