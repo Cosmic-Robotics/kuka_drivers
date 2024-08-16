@@ -17,6 +17,9 @@
 #include <string>
 #include <vector>
 
+#include <thread>
+#include <chrono>
+
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 
 #include "kuka_kss_rsi_driver/hardware_interface.hpp"
@@ -205,8 +208,11 @@ return_type KukaRSIHardwareInterface::write(const rclcpp::Time &, const rclcpp::
 
   out_buffer_ = RSICommand(joint_pos_correction_deg_, ipoc_, stop_flag_).xml_doc;
   server_->send(out_buffer_);
+  std::this_thread::sleep_for(std::chrono::microseconds(500));  
   server_->send(out_buffer_);
+  std::this_thread::sleep_for(std::chrono::microseconds(500));
   server_->send(out_buffer_);
+  std::this_thread::sleep_for(std::chrono::microseconds(500));
   server_->send(out_buffer_);
   return return_type::OK;
 }
