@@ -74,6 +74,7 @@ private:
 
   std::vector<double> hw_commands_;
   std::vector<double> hw_states_;
+  std::vector<double> prev_commands_;
 
   // RSI related joint positions
   std::vector<double> initial_joint_pos_;

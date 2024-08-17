@@ -136,6 +136,7 @@ CallbackReturn KukaRSIHardwareInterface::on_activate(const rclcpp_lifecycle::Sta
   {
     hw_states_[i] = rsi_state_.positions[i] * KukaRSIHardwareInterface::D2R;
     hw_commands_[i] = hw_states_[i];
+    prev_commands_[i] = hw_commands_[i];
     initial_joint_pos_[i] = rsi_state_.initial_positions[i] * KukaRSIHardwareInterface::D2R;
   }
   ipoc_ = rsi_state_.ipoc;
@@ -200,11 +201,12 @@ return_type KukaRSIHardwareInterface::write(const rclcpp::Time &, const rclcpp::
   for (size_t i = 0; i < info_.joints.size(); i++)
   {
     joint_pos_correction_deg_[i] =
-      (hw_commands_[i] - initial_joint_pos_[i]) * KukaRSIHardwareInterface::R2D;
+      (hw_commands_[i] - prev_commands_[i]) * KukaRSIHardwareInterface::R2D;
   }
 
   out_buffer_ = RSICommand(joint_pos_correction_deg_, ipoc_, stop_flag_).xml_doc;
   server_->send(out_buffer_);
+  prev_commands_ = hw_commands_;
   return return_type::OK;
 }
 }  // namespace kuka_kss_rsi_driver
