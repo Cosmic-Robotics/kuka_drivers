@@ -87,7 +87,8 @@ CallbackReturn KukaRSIHardwareInterface::on_init(const hardware_interface::Hardw
   RCLCPP_INFO(
     rclcpp::get_logger("KukaRSIHardwareInterface"), "Writing joint position data to %s", filename.c_str());
   // declare and create an output file stream to write joint position data to is should be a csv file
-  std::ofstream joint_log_file(filename);
+  std::ofstream joint_log_file(filename, std::ios::out | std::ios::app);
+
   // write the header of the csv file
   joint_log_file << "time, joint1, joint2, joint3, joint4, joint5, joint6, joint7" << std::endl;
   
@@ -213,18 +214,17 @@ return_type KukaRSIHardwareInterface::write(const rclcpp::Time &, const rclcpp::
   }
 
   for (size_t i = 0; i < info_.joints.size(); i++)
+  // write the timestamp to the joint_log_file
+  joint_log_file << rclcpp::Clock().now().seconds() << ","
   {
     joint_pos_correction_deg_[i] =
       (hw_commands_[i] - initial_joint_pos_[i]) * KukaRSIHardwareInterface::R2D;
+    // write the joint position correction to the robot
+    joint_log_file << joint_pos_correction_deg_[i] << ",";
   }
-  // write the joint position correction to the robot
-  // write the timestamp to the joint_log_file
-  joint_log_file << rclcpp::Clock().now().seconds() << ","
-                 << joint_pos_correction_deg_[0] << "," << joint_pos_correction_deg_[1] << ","
-                 << joint_pos_correction_deg_[2] << "," << joint_pos_correction_deg_[3] << ","
-                 << joint_pos_correction_deg_[4] << "," << joint_pos_correction_deg_[5] << ","
-                 << joint_pos_correction_deg_[6] << std::endl;
-
+  // write a newline and flush the buffer
+  joint_log_file << std::endl;
+  joint_log_file.flush();
 
   out_buffer_ = RSICommand(joint_pos_correction_deg_, ipoc_, stop_flag_).xml_doc;
   server_->send(out_buffer_);
