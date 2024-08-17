@@ -32,6 +32,7 @@ CallbackReturn KukaRSIHardwareInterface::on_init(const hardware_interface::Hardw
 
   hw_states_.resize(info_.joints.size(), 0.0);
   hw_commands_.resize(info_.joints.size(), 0.0);
+  prev_commands_.resize(info_.joints.size(), 0.0);
 
   for (const hardware_interface::ComponentInfo & joint : info_.joints)
   {
