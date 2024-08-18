@@ -204,7 +204,7 @@ return_type KukaRSIHardwareInterface::write(const rclcpp::Time &, const rclcpp::
   {
     joint_pos_correction_deg_[i] =
       (hw_commands_[i] - prev_commands_[i]) * KukaRSIHardwareInterface::R2D;
-    if (abs(joint_pos_correction_deg_[i] - prev_joint_pos_correction_deg_[i]) > 0.0001 * KukaRSIHardwareInterface::R2D) {
+    if (abs(joint_pos_correction_deg_[i] - prev_joint_pos_correction_deg_[i]) > 0.00001 * KukaRSIHardwareInterface::R2D) {
       joint_pos_correction_deg_[i] = prev_joint_pos_correction_deg_[i];
     }
   }
