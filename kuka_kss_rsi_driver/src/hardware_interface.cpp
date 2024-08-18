@@ -218,7 +218,7 @@ return_type KukaRSIHardwareInterface::write(const rclcpp::Time &, const rclcpp::
     is_active_ = false;
   }
 
-  joint_log_file << rclcpp::Clock().now().seconds() << ",";
+  joint_log_file << rclcpp::Clock().now().nanoseconds() << ",";
   for (size_t i = 0; i < info_.joints.size(); i++)
   // write the timestamp to the joint_log_file
   {
