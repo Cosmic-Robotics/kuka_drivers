@@ -95,7 +95,7 @@ CallbackReturn KukaRSIHardwareInterface::on_init(const hardware_interface::Hardw
   }
 
   // write the header of the csv file
-  joint_log_file << "time, joint1, joint2, joint3, joint4, joint5, joint6, joint7" << std::endl;
+  joint_log_file << "time,joint1,joint2,joint3,joint4,joint5,joint6," << std::endl;
   
   RCLCPP_INFO(
     rclcpp::get_logger("KukaRSIHardwareInterface"), "IP of client machine: %s:%d",
