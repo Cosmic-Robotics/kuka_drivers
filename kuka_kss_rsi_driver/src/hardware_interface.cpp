@@ -85,7 +85,6 @@ CallbackReturn KukaRSIHardwareInterface::on_init(const hardware_interface::Hardw
   char buffer[80];
   std::strftime(buffer, sizeof(buffer), "%Y%m%d%H%M%S", timeinfo);
   std::string filename = "/tmp/joint_log_" + std::string(buffer) + ".csv";
-  // log that we are writing a file to output joint position data
   RCLCPP_INFO(
     rclcpp::get_logger("KukaRSIHardwareInterface"), "Writing joint position data to %s", filename.c_str());
   // declare and create an output file stream to write joint position data to is should be a csv file
