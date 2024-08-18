@@ -87,7 +87,12 @@ CallbackReturn KukaRSIHardwareInterface::on_init(const hardware_interface::Hardw
   RCLCPP_INFO(
     rclcpp::get_logger("KukaRSIHardwareInterface"), "Writing joint position data to %s", filename.c_str());
   // declare and create an output file stream to write joint position data to is should be a csv file
-  std::ofstream joint_log_file(filename, std::ios::out | std::ios::app);
+    joint_log_file.open(filename, std::ios::out | std::ios::app);
+  if (!joint_log_file.is_open()) {
+    RCLCPP_FATAL(
+      rclcpp::get_logger("KukaRSIHardwareInterface"), "Failed to open joint log file: %s", filename.c_str());
+    return CallbackReturn::ERROR;
+  }
 
   // write the header of the csv file
   joint_log_file << "time, joint1, joint2, joint3, joint4, joint5, joint6, joint7" << std::endl;
