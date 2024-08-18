@@ -79,6 +79,7 @@ private:
   // RSI related joint positions
   std::vector<double> initial_joint_pos_;
   std::vector<double> joint_pos_correction_deg_;
+  std::vector<double> prev_joint_pos_correction_deg_;
 
   uint64_t ipoc_ = 0;
   RSIState rsi_state_;

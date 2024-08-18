@@ -72,6 +72,7 @@ CallbackReturn KukaRSIHardwareInterface::on_init(const hardware_interface::Hardw
 
   initial_joint_pos_.resize(info_.joints.size(), 0.0);
   joint_pos_correction_deg_.resize(info_.joints.size(), 0.0);
+  prev_joint_pos_correction_deg_.resize(info_.joints.size(), 0.0);
   ipoc_ = 0;
 
   rsi_ip_address_ = info_.hardware_parameters["client_ip"];
@@ -204,16 +205,17 @@ return_type KukaRSIHardwareInterface::write(const rclcpp::Time &, const rclcpp::
     joint_pos_correction_deg_[i] =
       (hw_commands_[i] - prev_commands_[i]) * KukaRSIHardwareInterface::R2D;
     if (joint_pos_correction_deg_[i] > 0.0005 * KukaRSIHardwareInterface::R2D) {
-      joint_pos_correction_deg_[i] = 0.0005 * KukaRSIHardwareInterface::R2D;
+      joint_pos_correction_deg_[i] = prev_joint_pos_correction_deg_[i];
     }
     if (joint_pos_correction_deg_[i] < -0.0005 * KukaRSIHardwareInterface::R2D){
-      joint_pos_correction_deg_[i] = -0.0005 * KukaRSIHardwareInterface::R2D;
+      joint_pos_correction_deg_[i] = prev_joint_pos_correction_deg_[i];
     }
   }
 
   out_buffer_ = RSICommand(joint_pos_correction_deg_, ipoc_, stop_flag_).xml_doc;
   server_->send(out_buffer_);
   prev_commands_ = hw_commands_;
+  prev_joint_pos_correction_deg_ = joint_pos_correction_deg_;
   return return_type::OK;
 }
 }  // namespace kuka_kss_rsi_driver
