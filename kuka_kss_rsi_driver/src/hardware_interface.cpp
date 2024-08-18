@@ -203,6 +203,12 @@ return_type KukaRSIHardwareInterface::write(const rclcpp::Time &, const rclcpp::
   {
     joint_pos_correction_deg_[i] =
       (hw_commands_[i] - prev_commands_[i]) * KukaRSIHardwareInterface::R2D;
+    if (joint_pos_correction_deg_[i] > .005 * R2D) {
+      joint_pos_correction_deg_[i] = .005;
+    }
+    if (joint_pos_correction_deg_[i] < -.005 * R2D){
+      joint_pos_correction_deg_[i] = -.005;
+    }
   }
 
   out_buffer_ = RSICommand(joint_pos_correction_deg_, ipoc_, stop_flag_).xml_doc;
