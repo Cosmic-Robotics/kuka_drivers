@@ -228,7 +228,7 @@ return_type KukaRSIHardwareInterface::write(const rclcpp::Time &, const rclcpp::
       (hw_commands_[i] - prev_commands_[i]) * KukaRSIHardwareInterface::R2D;
     joint_vel_correction_deg_[i] = joint_pos_correction_deg_[i] - prev_joint_pos_correction_deg_[i];
 
-    if (abs(joint_vel_correction_deg_[i] - prev_joint_vel_correction_deg_[i]) > 5 * KukaRSIHardwareInterface::R2D) {
+    if (abs(joint_vel_correction_deg_[i] - prev_joint_vel_correction_deg_[i]) > 0.005 * KukaRSIHardwareInterface::R2D) {
       joint_pos_correction_deg_[i] = prev_joint_pos_correction_deg_[i];
     }
     // write the joint position correction to the robot
