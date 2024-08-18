@@ -221,7 +221,6 @@ return_type KukaRSIHardwareInterface::write(const rclcpp::Time &, const rclcpp::
 
   joint_log_file << rclcpp::Clock().now().nanoseconds() << ",";
   for (size_t i = 0; i < info_.joints.size(); i++)
-  // write the timestamp to the joint_log_file
   {
     joint_pos_correction_deg_[i] =
       (hw_commands_[i] - prev_commands_[i]) * KukaRSIHardwareInterface::R2D;
