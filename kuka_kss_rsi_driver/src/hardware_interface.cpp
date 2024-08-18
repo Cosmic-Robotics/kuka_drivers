@@ -203,14 +203,14 @@ return_type KukaRSIHardwareInterface::write(const rclcpp::Time &, const rclcpp::
   {
     joint_pos_correction_deg_[i] =
       (hw_commands_[i] - prev_commands_[i]) * KukaRSIHardwareInterface::R2D;
-    RCLCPP_ERROR(rclcpp::get_logger("KukaRSIHardwareInterface"), "Joint command: %s", std::to_string(joint_pos_correction_deg_[i]).c_str());
-    if (joint_pos_correction_deg_[i] > .005 * R2D) {
-      joint_pos_correction_deg_[i] = .005 * R2D;
-      RCLCPP_ERROR(rclcpp::get_logger("KukaRSIHardwareInterface"), "Ceiling reached with command");
+    RCLCPP_INFO(rclcpp::get_logger("KukaRSIHardwareInterface"), "Cooking joint command";
+    if (joint_pos_correction_deg_[i] > 0.05 * KukaRSIHardwareInterface::R2D) {
+      joint_pos_correction_deg_[i] = 0.05 * KukaRSIHardwareInterface::R2D;
+      RCLCPP_INFO(rclcpp::get_logger("KukaRSIHardwareInterface"), "Ceiling reached with command");
     }
-    if (joint_pos_correction_deg_[i] < -.005 * R2D){
-      joint_pos_correction_deg_[i] = -.005 * R2D;
-      RCLCPP_ERROR(rclcpp::get_logger("KukaRSIHardwareInterface"), "Floor reached with command");
+    if (joint_pos_correction_deg_[i] < -0.05 * KukaRSIHardwareInterface::R2D){
+      joint_pos_correction_deg_[i] = -0.05 * KukaRSIHardwareInterface::R2D;
+      RCLCPP_INFO(rclcpp::get_logger("KukaRSIHardwareInterface"), "Floor reached with command");
     }
   }
 
