@@ -33,6 +33,7 @@ CallbackReturn KukaRSIHardwareInterface::on_init(const hardware_interface::Hardw
 
   hw_states_.resize(info_.joints.size(), 0.0);
   hw_commands_.resize(info_.joints.size(), 0.0);
+  prev_commands_.resize(info_.joints.size(), 0.0);
 
   for (const hardware_interface::ComponentInfo & joint : info_.joints)
   {
@@ -72,6 +73,7 @@ CallbackReturn KukaRSIHardwareInterface::on_init(const hardware_interface::Hardw
 
   initial_joint_pos_.resize(info_.joints.size(), 0.0);
   joint_pos_correction_deg_.resize(info_.joints.size(), 0.0);
+  prev_joint_pos_correction_deg_.resize(info_.joints.size(), 0.0);
   ipoc_ = 0;
 
   rsi_ip_address_ = info_.hardware_parameters["client_ip"];
@@ -157,6 +159,7 @@ CallbackReturn KukaRSIHardwareInterface::on_activate(const rclcpp_lifecycle::Sta
   {
     hw_states_[i] = rsi_state_.positions[i] * KukaRSIHardwareInterface::D2R;
     hw_commands_[i] = hw_states_[i];
+    prev_commands_[i] = hw_commands_[i];
     initial_joint_pos_[i] = rsi_state_.initial_positions[i] * KukaRSIHardwareInterface::D2R;
   }
   ipoc_ = rsi_state_.ipoc;
@@ -223,7 +226,10 @@ return_type KukaRSIHardwareInterface::write(const rclcpp::Time &, const rclcpp::
   // write the timestamp to the joint_log_file
   {
     joint_pos_correction_deg_[i] =
-      (hw_commands_[i] - initial_joint_pos_[i]) * KukaRSIHardwareInterface::R2D;
+      (hw_commands_[i] - prev_commands_[i]) * KukaRSIHardwareInterface::R2D;
+    if (abs(joint_pos_correction_deg_[i] - prev_joint_pos_correction_deg_[i]) > 0.0001 * KukaRSIHardwareInterface::R2D) {
+      joint_pos_correction_deg_[i] = prev_joint_pos_correction_deg_[i];
+    }
     // write the joint position correction to the robot
     joint_log_file << joint_pos_correction_deg_[i] << ",";
   }
@@ -233,6 +239,8 @@ return_type KukaRSIHardwareInterface::write(const rclcpp::Time &, const rclcpp::
 
   out_buffer_ = RSICommand(joint_pos_correction_deg_, ipoc_, stop_flag_).xml_doc;
   server_->send(out_buffer_);
+  prev_commands_ = hw_commands_;
+  prev_joint_pos_correction_deg_ = joint_pos_correction_deg_;
   return return_type::OK;
 }
 }  // namespace kuka_kss_rsi_driver
