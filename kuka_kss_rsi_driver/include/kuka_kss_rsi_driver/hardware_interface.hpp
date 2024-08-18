@@ -90,7 +90,6 @@ private:
   std::string out_buffer_;
   std::ofstream joint_log_file;
 
-
   static constexpr double R2D = 180 / M_PI;
   static constexpr double D2R = M_PI / 180;
 };
