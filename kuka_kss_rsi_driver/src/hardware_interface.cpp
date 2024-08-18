@@ -203,7 +203,7 @@ return_type KukaRSIHardwareInterface::write(const rclcpp::Time &, const rclcpp::
   {
     joint_pos_correction_deg_[i] =
       (hw_commands_[i] - prev_commands_[i]) * KukaRSIHardwareInterface::R2D;
-    RCLCPP_INFO(rclcpp::get_logger("KukaRSIHardwareInterface"), "Cooking joint command";
+    RCLCPP_INFO(rclcpp::get_logger("KukaRSIHardwareInterface"), "Cooking joint command");
     if (joint_pos_correction_deg_[i] > 0.05 * KukaRSIHardwareInterface::R2D) {
       joint_pos_correction_deg_[i] = 0.05 * KukaRSIHardwareInterface::R2D;
       RCLCPP_INFO(rclcpp::get_logger("KukaRSIHardwareInterface"), "Ceiling reached with command");
