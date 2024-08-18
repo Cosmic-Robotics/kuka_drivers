@@ -16,6 +16,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <fstream>
 
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 
@@ -78,10 +79,28 @@ CallbackReturn KukaRSIHardwareInterface::on_init(const hardware_interface::Hardw
   rsi_ip_address_ = info_.hardware_parameters["client_ip"];
   rsi_port_ = std::stoi(info_.hardware_parameters["client_port"]);
 
+  // define the file name and location to write the joint data to 
+  std::time_t now = std::time(nullptr);
+  std::tm* timeinfo = std::localtime(&now);
+  char buffer[80];
+  std::strftime(buffer, sizeof(buffer), "%Y%m%d%H%M%S", timeinfo);
+  std::string filename = "/tmp/joint_log_" + std::string(buffer) + ".csv";
+  RCLCPP_INFO(
+    rclcpp::get_logger("KukaRSIHardwareInterface"), "Writing joint position data to %s", filename.c_str());
+    joint_log_file.open(filename, std::ios::out | std::ios::app);
+  if (!joint_log_file.is_open()) {
+    RCLCPP_FATAL(
+      rclcpp::get_logger("KukaRSIHardwareInterface"), "Failed to open joint log file: %s", filename.c_str());
+    return CallbackReturn::ERROR;
+  }
+
+  // write the header of the csv file
+  joint_log_file << "time,joint1,joint2,joint3,joint4,joint5,joint6," << std::endl;
+  
   RCLCPP_INFO(
     rclcpp::get_logger("KukaRSIHardwareInterface"), "IP of client machine: %s:%d",
     rsi_ip_address_.c_str(), rsi_port_);
-
+  
   return CallbackReturn::SUCCESS;
 }
 
@@ -200,6 +219,7 @@ return_type KukaRSIHardwareInterface::write(const rclcpp::Time &, const rclcpp::
     is_active_ = false;
   }
 
+  joint_log_file << rclcpp::Clock().now().nanoseconds() << ",";
   for (size_t i = 0; i < info_.joints.size(); i++)
   {
     joint_pos_correction_deg_[i] =
@@ -207,7 +227,12 @@ return_type KukaRSIHardwareInterface::write(const rclcpp::Time &, const rclcpp::
     if (abs(joint_pos_correction_deg_[i] - prev_joint_pos_correction_deg_[i]) > 0.0001 * KukaRSIHardwareInterface::R2D) {
       joint_pos_correction_deg_[i] = prev_joint_pos_correction_deg_[i];
     }
+    // write the joint position correction to the robot
+    joint_log_file << joint_pos_correction_deg_[i] << ",";
   }
+  // write a newline and flush the buffer
+  joint_log_file << std::endl;
+  joint_log_file.flush();
 
   out_buffer_ = RSICommand(joint_pos_correction_deg_, ipoc_, stop_flag_).xml_doc;
   server_->send(out_buffer_);
