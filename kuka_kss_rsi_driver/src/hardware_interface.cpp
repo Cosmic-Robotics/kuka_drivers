@@ -205,9 +205,11 @@ return_type KukaRSIHardwareInterface::write(const rclcpp::Time &, const rclcpp::
       (hw_commands_[i] - prev_commands_[i]) * KukaRSIHardwareInterface::R2D;
     if (joint_pos_correction_deg_[i] > .005 * R2D) {
       joint_pos_correction_deg_[i] = .005;
+      RCLCPP_ERROR(rclcpp::get_logger("KukaRSIHardwareInterface"), "Ceiling reached with command");
     }
     if (joint_pos_correction_deg_[i] < -.005 * R2D){
       joint_pos_correction_deg_[i] = -.005;
+      RCLCPP_ERROR(rclcpp::get_logger("KukaRSIHardwareInterface"), "Floor reached with command");
     }
   }
 
