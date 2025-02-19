@@ -14,8 +14,11 @@
 
   <depend>rclcpp</depend>
   <depend>rclcpp_lifecycle</depend>
+  <depend>rclcpp_components</depend>
   <depend>lifecycle_msgs</depend>
   <depend>controller_manager</depend>
+  <depend>std_msgs</depend>
+  <depend>rclcpp_action</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

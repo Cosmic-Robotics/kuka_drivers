@@ -20,6 +20,10 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(lifecycle_msgs REQUIRED)
 find_package(controller_manager REQUIRED)
+find_package(controller_manager_msgs REQUIRED)
+find_package(rclcpp_components REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(rclcpp_action REQUIRED)
 
 add_library(kuka_drivers_core SHARED
   src/ros2_base_node.cpp
@@ -37,6 +41,26 @@ ament_export_targets(export_kuka_drivers_core HAS_LIBRARY_TARGET)
 ament_export_dependencies(rclcpp rclcpp_lifecycle lifecycle_msgs)
 ament_export_libraries(${PROJECT_NAME})
 
+add_library(
+  kuka_controller_manager SHARED src/kuka_controller_manager.cpp
+)
+ament_target_dependencies(
+  kuka_controller_manager
+  rclcpp
+  rclcpp_lifecycle
+  lifecycle_msgs
+  controller_manager
+  controller_manager_msgs
+  rclcpp_components
+  std_msgs
+)
+rclcpp_components_register_nodes(
+  kuka_controller_manager
+  PLUGIN "kuka_drivers_core::KukaControllerManager"
+  EXECUTABLE kuka_controller_manager_node
+)
+ament_export_dependencies(rclcpp_components std_msgs controller_manager_msgs rclcpp_action)
+
 add_library(communication_helpers SHARED
   include/communication_helpers/ros2_control_tools.hpp
   include/communication_helpers/service_tools.hpp)
@@ -48,6 +72,12 @@ ament_export_dependencies(rclcpp)
 
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION include/${PROJECT_NAME}/
+)
+
+install(
+  TARGETS kuka_controller_manager
+  EXPORT export_${PROJECT_NAME}
+  LIBRARY DESTINATION lib
 )
 
 install(TARGETS kuka_drivers_core
