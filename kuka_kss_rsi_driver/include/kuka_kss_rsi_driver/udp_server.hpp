@@ -55,11 +55,17 @@ class UDPServer {
       std::cerr << "Error setting DSCP to Expedited Forwarding: "
                 << strerror(errno) << std::endl;
     }
-    const int priority = 6;
+    int priority = 7;
     if (setsockopt(sockfd_, SOL_SOCKET, SO_PRIORITY, &priority,
                    sizeof(priority)) < 0) {
-      std::cerr << "Error setting socket priority: " << strerror(errno)
-                << std::endl;
+      std::cerr << "Error setting socket priority to 7: " << strerror(errno)
+                << "\nAttempting to set priority to 6 instead." << std::endl;
+      priority = 6;
+      if (setsockopt(sockfd_, SOL_SOCKET, SO_PRIORITY, &priority,
+                     sizeof(priority)) < 0) {
+        std::cerr << "Error setting socket priority to 6: " << strerror(errno)
+                  << std::endl;
+      }
     }
     memset(&serveraddr_, 0, sizeof(serveraddr_));
     serveraddr_.sin_family = AF_INET;
