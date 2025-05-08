@@ -16,8 +16,6 @@
 #define KUKA_KSS_RSI_DRIVER__UDP_SERVER_HPP_
 
 // Select includes
-#include <sys/time.h>
-
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -25,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -34,70 +33,77 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-class UDPServer
-{
-public:
+class UDPServer {
+ public:
   UDPServer(std::string host, unsigned short port)
-  : local_host_(host), local_port_(port), timeout_(false)
-  {
-    RCLCPP_INFO(rclcpp::get_logger("UDPServer"), "%s: %i", local_host_.c_str(), local_port_);
+      : local_host_(host), local_port_(port), timeout_(false) {
+    RCLCPP_INFO(rclcpp::get_logger("UDPServer"), "%s: %i", local_host_.c_str(),
+                local_port_);
     sockfd_ = socket(AF_INET, SOCK_DGRAM, 0);
-    if (sockfd_ < 0)
-    {
-      throw std::runtime_error("Error opening socket: " + std::string(strerror(errno)));
+    if (sockfd_ < 0) {
+      throw std::runtime_error("Error opening socket: " +
+                               std::string(strerror(errno)));
     }
-    optval = 1;
-    setsockopt(sockfd_, SOL_SOCKET, SO_REUSEADDR, (const void *)&optval, sizeof(int));
+    const int optval = 1;
+    if (setsockopt(sockfd_, SOL_SOCKET, SO_REUSEADDR, (const void *)&optval,
+                   sizeof(int)) < 0) {
+      std::cerr << "Error allowing socket address reuse: " << strerror(errno)
+                << std::endl;
+    }
+    const int tos = 0xB8;
+    if (setsockopt(sockfd_, IPPROTO_IP, IP_TOS, &tos, sizeof(tos)) < 0) {
+      std::cerr << "Error setting DSCP to Expedited Forwarding: "
+                << strerror(errno) << std::endl;
+    }
+    const int priority = 6;
+    if (setsockopt(sockfd_, SOL_SOCKET, SO_PRIORITY, &priority,
+                   sizeof(priority)) < 0) {
+      std::cerr << "Error setting socket priority: " << strerror(errno)
+                << std::endl;
+    }
     memset(&serveraddr_, 0, sizeof(serveraddr_));
     serveraddr_.sin_family = AF_INET;
     serveraddr_.sin_addr.s_addr = inet_addr(local_host_.c_str());
     serveraddr_.sin_port = htons(local_port_);
-    if (bind(sockfd_, (struct sockaddr *)&serveraddr_, sizeof(serveraddr_)) < 0)
-    {
-      throw std::runtime_error("Error binding socket: " + std::string(strerror(errno)));
+    if (bind(sockfd_, (struct sockaddr *)&serveraddr_, sizeof(serveraddr_)) <
+        0) {
+      throw std::runtime_error("Error binding socket: " +
+                               std::string(strerror(errno)));
     }
     clientlen_ = sizeof(clientaddr_);
   }
 
   ~UDPServer() { close(sockfd_); }
 
-  UDPServer(UDPServer & other) = delete;
-  UDPServer & operator=(const UDPServer & other) = delete;
+  UDPServer(const UDPServer &other) = delete;
+  UDPServer &operator=(const UDPServer &other) = delete;
 
-  bool set_timeout(int millisecs)
-  {
-    if (millisecs != 0)
-    {
+  bool set_timeout(int millisecs) {
+    if (millisecs != 0) {
       tv_.tv_sec = millisecs / 1000;
       tv_.tv_usec = (millisecs % 1000) * 1000;
       timeout_ = true;
       return timeout_;
-    }
-    else
-    {
+    } else {
       return timeout_;
     }
   }
 
-  ssize_t send(std::string & buffer)
-  {
+  ssize_t send(std::string &buffer) {
     ssize_t bytes = 0;
-    bytes = sendto(
-      sockfd_, buffer.c_str(), buffer.size(), 0, (struct sockaddr *)&clientaddr_, clientlen_);
-    if (bytes < 0)
-    {
+    bytes = sendto(sockfd_, buffer.c_str(), buffer.size(), 0,
+                   (struct sockaddr *)&clientaddr_, clientlen_);
+    if (bytes < 0) {
       RCLCPP_ERROR(rclcpp::get_logger("UDPServer"), "Error in send");
     }
 
     return bytes;
   }
 
-  ssize_t recv(std::string & buffer)
-  {
+  ssize_t recv(std::string &buffer) {
     ssize_t bytes = 0;
 
-    if (timeout_)
-    {
+    if (timeout_) {
       fd_set read_fds;
       FD_ZERO(&read_fds);
       FD_SET(sockfd_, &read_fds);
@@ -106,32 +112,25 @@ public:
       tv.tv_sec = tv_.tv_sec;
       tv.tv_usec = tv_.tv_usec;
 
-      if (select(sockfd_ + 1, &read_fds, nullptr, nullptr, &tv) < 0)
-      {
+      if (select(sockfd_ + 1, &read_fds, nullptr, nullptr, &tv) < 0) {
         return 0;
       }
 
-      if (FD_ISSET(sockfd_, &read_fds))
-      {
+      if (FD_ISSET(sockfd_, &read_fds)) {
         memset(buffer_, 0, BUFSIZE);
-        bytes =
-          recvfrom(sockfd_, buffer_, BUFSIZE, 0, (struct sockaddr *)&clientaddr_, &clientlen_);
-        if (bytes < 0)
-        {
+        bytes = recvfrom(sockfd_, buffer_, BUFSIZE, 0,
+                         (struct sockaddr *)&clientaddr_, &clientlen_);
+        if (bytes < 0) {
           RCLCPP_ERROR(rclcpp::get_logger("UDPServer"), "Error in receive");
         }
-      }
-      else
-      {
+      } else {
         return 0;
       }
-    }
-    else
-    {
+    } else {
       memset(buffer_, 0, BUFSIZE);
-      bytes = recvfrom(sockfd_, buffer_, BUFSIZE, 0, (struct sockaddr *)&clientaddr_, &clientlen_);
-      if (bytes < 0)
-      {
+      bytes = recvfrom(sockfd_, buffer_, BUFSIZE, 0,
+                       (struct sockaddr *)&clientaddr_, &clientlen_);
+      if (bytes < 0) {
         RCLCPP_ERROR(rclcpp::get_logger("UDPServer"), "Error in receive");
       }
     }
@@ -141,7 +140,7 @@ public:
     return bytes;
   }
 
-private:
+ private:
   static const int BUFSIZE = 1024;
   std::string local_host_;
   uint16_t local_port_;
@@ -153,7 +152,6 @@ private:
   struct sockaddr_in serveraddr_;
   struct sockaddr_in clientaddr_;
   char buffer_[BUFSIZE];
-  int optval;
 };
 
 #endif  // KUKA_KSS_RSI_DRIVER__UDP_SERVER_HPP_
