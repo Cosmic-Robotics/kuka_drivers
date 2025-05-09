@@ -51,11 +51,13 @@ class UDPServer {
                 << std::endl;
     }
     const int tos = 0xB8;
+    std::cout << "Setting DSCP to Expedited Forwarding (0xB8)" << std::endl;
     if (setsockopt(sockfd_, IPPROTO_IP, IP_TOS, &tos, sizeof(tos)) < 0) {
       std::cerr << "Error setting DSCP to Expedited Forwarding: "
                 << strerror(errno) << std::endl;
     }
     int priority = 7;
+    std::cout << "Setting socket priority to 7" << std::endl;
     if (setsockopt(sockfd_, SOL_SOCKET, SO_PRIORITY, &priority,
                    sizeof(priority)) < 0) {
       std::cerr << "Error setting socket priority to 7: " << strerror(errno)
