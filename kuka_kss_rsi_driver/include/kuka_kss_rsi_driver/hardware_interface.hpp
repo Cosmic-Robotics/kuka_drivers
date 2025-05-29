@@ -22,51 +22,56 @@
 #include <string>
 #include <vector>
 
+#include "hardware_interface/system_interface.hpp"
+#include "kuka_kss_rsi_driver/rsi_command.hpp"
+#include "kuka_kss_rsi_driver/rsi_state.hpp"
+#include "kuka_kss_rsi_driver/udp_server.hpp"
+#include "kuka_kss_rsi_driver/visibility_control.h"
 #include "pluginlib/class_list_macros.hpp"
 #include "rclcpp/macros.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/state.hpp"
 
-#include "hardware_interface/system_interface.hpp"
-
-#include "kuka_kss_rsi_driver/rsi_command.hpp"
-#include "kuka_kss_rsi_driver/rsi_state.hpp"
-#include "kuka_kss_rsi_driver/udp_server.hpp"
-#include "kuka_kss_rsi_driver/visibility_control.h"
-
 using hardware_interface::return_type;
-using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+using CallbackReturn =
+    rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
-namespace kuka_kss_rsi_driver
-{
+namespace kuka_kss_rsi_driver {
 
-class KukaRSIHardwareInterface : public hardware_interface::SystemInterface
-{
-public:
+class KukaRSIHardwareInterface : public hardware_interface::SystemInterface {
+ public:
   RCLCPP_SHARED_PTR_DEFINITIONS(KukaRSIHardwareInterface)
 
   KUKA_KSS_RSI_DRIVER_PUBLIC
-  CallbackReturn on_init(const hardware_interface::HardwareInfo & info) override;
+  CallbackReturn on_init(const hardware_interface::HardwareInfo& info) override;
 
   KUKA_KSS_RSI_DRIVER_PUBLIC
-  std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
+  std::vector<hardware_interface::StateInterface> export_state_interfaces()
+      override;
 
   KUKA_KSS_RSI_DRIVER_PUBLIC
-  std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
+  std::vector<hardware_interface::CommandInterface> export_command_interfaces()
+      override;
 
   KUKA_KSS_RSI_DRIVER_PUBLIC
-  CallbackReturn on_activate(const rclcpp_lifecycle::State & previous_state) override;
+  CallbackReturn on_activate(
+      const rclcpp_lifecycle::State& previous_state) override;
 
   KUKA_KSS_RSI_DRIVER_PUBLIC
-  CallbackReturn on_deactivate(const rclcpp_lifecycle::State & previous_state) override;
+  CallbackReturn on_deactivate(
+      const rclcpp_lifecycle::State& previous_state) override;
 
   KUKA_KSS_RSI_DRIVER_PUBLIC
-  return_type read(const rclcpp::Time & time, const rclcpp::Duration & period) override;
+  return_type read(const rclcpp::Time& time,
+                   const rclcpp::Duration& period) override;
 
   KUKA_KSS_RSI_DRIVER_PUBLIC
-  return_type write(const rclcpp::Time & time, const rclcpp::Duration & period) override;
+  return_type write(const rclcpp::Time& time,
+                    const rclcpp::Duration& period) override;
 
-private:
+ private:
+  std::vector<double> prev_corr_vals_;
+
   bool stop_flag_ = false;
   bool is_active_ = false;
   std::string rsi_ip_address_ = "";
