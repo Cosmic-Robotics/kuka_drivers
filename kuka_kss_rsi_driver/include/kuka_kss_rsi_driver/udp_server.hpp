@@ -52,6 +52,20 @@ public:
     serveraddr_.sin_family = AF_INET;
     serveraddr_.sin_addr.s_addr = inet_addr(local_host_.c_str());
     serveraddr_.sin_port = htons(local_port_);
+
+    int priority{7};
+    if (setsockopt(sockfd_, SOL_SOCKET, SO_PRIORITY, &priority,
+                  sizeof(priority)) < 0) {
+      std::cerr << "could not set socket priority 7 (" << strerror(errno)
+                << ")..." << std::endl;
+      priority = 6;
+      if (setsockopt(sockfd_, SOL_SOCKET, SO_PRIORITY, &priority,
+                    sizeof(priority)) < 0) {
+        std::cerr << "could not set any socket priority (" << strerror(errno)
+                  << ")" << std::endl;
+      }
+    }
+
     if (bind(sockfd_, (struct sockaddr *)&serveraddr_, sizeof(serveraddr_)) < 0)
     {
       throw std::runtime_error("Error binding socket: " + std::string(strerror(errno)));
