@@ -18,6 +18,8 @@
   <depend>controller_manager_msgs</depend>
   <depend>std_msgs</depend>
 
+  <depend>base</depend>
+
   <depend>tinyxml_vendor</depend>
 
   <exec_depend>ros2_control</exec_depend>
