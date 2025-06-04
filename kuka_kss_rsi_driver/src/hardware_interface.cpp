@@ -107,12 +107,12 @@ CallbackReturn KukaRSIHardwareInterface::on_activate(
   server_->set_timeout(
       10000);  // Set receive timeout to 10 seconds for activation
 
-  auto pub_or = cosmic::ShmPublisher<double[6]>::Make("command_angles", 8, 64);
+  auto pub_or = cosmic::ShmPublisher<double[7]>::Make("command_angles", 8, 64);
   if (!pub_or.ok()) {
     throw std::runtime_error("could not create command angles shm");
   }
   command_publisher_ = std::move(*pub_or);
-  pub_or = cosmic::ShmPublisher<double[6]>::Make("state_angles", 8, 64);
+  pub_or = cosmic::ShmPublisher<double[7]>::Make("state_angles", 8, 64);
   if (!pub_or.ok()) {
     throw std::runtime_error("could not create state angles shm");
   }
@@ -184,10 +184,12 @@ return_type KukaRSIHardwareInterface::read(const rclcpp::Time &,
   for (std::size_t i = 0; i < info_.joints.size(); ++i) {
     hw_states_[i] = rsi_state_.positions[i] * KukaRSIHardwareInterface::D2R;
   }
-  state_publisher_.Write(
-      reinterpret_cast<const double(*)[6]>(hw_states_.data()));
 
   ipoc_ = rsi_state_.ipoc;
+  double vals[7];
+  vals[0] = static_cast<double>(ipoc_);
+  std::memcpy(vals + 1, hw_states_.data(), 6 * sizeof(double));
+  state_publisher_.Write(reinterpret_cast<const double(*)[7]>(vals));
   return return_type::OK;
 }
 
@@ -211,8 +213,10 @@ return_type KukaRSIHardwareInterface::write(const rclcpp::Time &,
                                    KukaRSIHardwareInterface::R2D;
   }
 
-  command_publisher_.Write(
-      reinterpret_cast<const double(*)[6]>(joint_pos_correction_deg_.data()));
+  double vals[7];
+  vals[0] = static_cast<double>(ipoc_);
+  std::memcpy(vals + 1, joint_pos_correction_deg_.data(), 6 * sizeof(double));
+  command_publisher_.Write(reinterpret_cast<const double(*)[7]>(vals));
 
   out_buffer_ =
       RSICommand(joint_pos_correction_deg_, ipoc_, stop_flag_).xml_doc;
