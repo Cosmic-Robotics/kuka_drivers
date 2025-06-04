@@ -90,7 +90,8 @@ class KukaRSIHardwareInterface : public hardware_interface::SystemInterface {
   std::string in_buffer_;
   std::string out_buffer_;
 
-  cosmic::ShmPublisher<double[6]> shm_publisher_;
+  cosmic::ShmPublisher<double[6]> command_publisher_;
+  cosmic::ShmPublisher<double[6]> state_publisher_;
 
   static constexpr double R2D = 180 / M_PI;
   static constexpr double D2R = M_PI / 180;

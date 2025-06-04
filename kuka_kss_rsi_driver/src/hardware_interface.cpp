@@ -107,11 +107,16 @@ CallbackReturn KukaRSIHardwareInterface::on_activate(
   server_->set_timeout(
       10000);  // Set receive timeout to 10 seconds for activation
 
-  auto pub_or = cosmic::ShmPublisher<double[6]>::Make("joint_angles", 8, 64);
+  auto pub_or = cosmic::ShmPublisher<double[6]>::Make("command_angles", 8, 64);
   if (!pub_or.ok()) {
-    throw std::runtime_error("could not create joint angles shm");
+    throw std::runtime_error("could not create command angles shm");
   }
-  shm_publisher_ = std::move(*pub_or);
+  command_publisher_ = std::move(*pub_or);
+  pub_or = cosmic::ShmPublisher<double[6]>::Make("state_angles", 8, 64);
+  if (!pub_or.ok()) {
+    throw std::runtime_error("could not create state angles shm");
+  }
+  state_publisher_ = std::move(*pub_or);
 
   RCLCPP_INFO(rclcpp::get_logger("KukaRSIHardwareInterface"),
               "Connecting to robot . . .");
@@ -179,6 +184,9 @@ return_type KukaRSIHardwareInterface::read(const rclcpp::Time &,
   for (std::size_t i = 0; i < info_.joints.size(); ++i) {
     hw_states_[i] = rsi_state_.positions[i] * KukaRSIHardwareInterface::D2R;
   }
+  state_publisher_.Write(
+      reinterpret_cast<const double(*)[6]>(hw_states_.data()));
+
   ipoc_ = rsi_state_.ipoc;
   return return_type::OK;
 }
@@ -203,7 +211,7 @@ return_type KukaRSIHardwareInterface::write(const rclcpp::Time &,
                                    KukaRSIHardwareInterface::R2D;
   }
 
-  shm_publisher_.Write(
+  command_publisher_.Write(
       reinterpret_cast<const double(*)[6]>(joint_pos_correction_deg_.data()));
 
   out_buffer_ =
