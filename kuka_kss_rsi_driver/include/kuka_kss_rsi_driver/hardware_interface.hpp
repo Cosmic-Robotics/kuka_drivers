@@ -78,6 +78,10 @@ class KukaRSIHardwareInterface : public hardware_interface::SystemInterface {
 
   std::vector<double> hw_commands_;
   std::vector<double> hw_states_;
+  std::vector<double> hw_commands_prev_;
+  std::vector<int> hw_commands_ind_;
+  std::vector<std::array<double, 4>> hw_commands_variance_;
+  std::vector<int> hw_commands_lerp_factor_;
 
   // RSI related joint positions
   std::vector<double> initial_joint_pos_;

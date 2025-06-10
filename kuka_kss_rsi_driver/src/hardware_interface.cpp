@@ -208,13 +208,44 @@ return_type KukaRSIHardwareInterface::write(const rclcpp::Time &,
     is_active_ = false;
   }
 
-  for (size_t i = 0; i < info_.joints.size(); i++) {
-    joint_pos_correction_deg_[i] = (hw_commands_[i] - initial_joint_pos_[i]) *
-                                   KukaRSIHardwareInterface::R2D;
+  if (hw_commands_variance_.empty()) {
+    hw_commands_lerp_factor_ = std::vector<int>(info_.joints.size(), 0);
+    hw_commands_ind_ = std::vector<int>(info_.joints.size(), 0);
+    hw_commands_variance_ = decltype(hw_commands_variance_)(
+        info_.joints.size(), std::array<double, 4>{});
+  } else {
+    for (size_t i = 0; i < info_.joints.size(); i++) {
+      const auto diff = hw_commands_[i] - hw_commands_prev_[i];
+
+      if (hw_commands_lerp_factor_[i] == 0 &&
+          diff > std::accumulate(hw_commands_variance_[i].cbegin(),
+                                 hw_commands_variance_[i].cend(), 0.)) {
+        hw_commands_lerp_factor_[i] = 10;
+      }
+
+      hw_commands_variance_[i][hw_commands_ind_[i]] = std::abs(diff);
+      hw_commands_ind_[i] = (hw_commands_ind_[i] + 1) % 4;
+    }
   }
+
+  for (size_t i = 0; i < info_.joints.size(); i++) {
+    auto command = hw_commands_[i];
+    if (hw_commands_lerp_factor_[i]) {
+      command = hw_commands_lerp_factor_[i] / 10. * hw_commands_prev_[i] +
+                (10 - hw_commands_lerp_factor_[i]) / 10. * hw_commands_[i];
+      --hw_commands_lerp_factor_[i];
+    }
+    joint_pos_correction_deg_[i] =
+        (command - initial_joint_pos_[i]) * KukaRSIHardwareInterface::R2D;
+  }
+
+  hw_commands_prev_ = hw_commands_;
 
   double vals[7];
   vals[0] = static_cast<double>(ipoc_);
+  // for (size_t i{0}; i < 6; ++i)
+  //   vals[i + 1] = std::accumulate(hw_commands_variance_[i].cbegin(),
+  //                                 hw_commands_variance_[i].cend(), 0.);
   std::memcpy(vals + 1, joint_pos_correction_deg_.data(), 6 * sizeof(double));
   command_publisher_.Write(reinterpret_cast<const double(*)[7]>(vals));
 
