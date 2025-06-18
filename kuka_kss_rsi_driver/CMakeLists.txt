@@ -23,7 +23,7 @@ find_package(controller_manager_msgs REQUIRED)
 find_package(pluginlib REQUIRED)
 
 find_package(absl REQUIRED)
-find_package(base REQUIRED)
+#find_package(base REQUIRED)
 
 find_package(tinyxml_vendor REQUIRED)
 find_package(TinyXML REQUIRED)
@@ -40,7 +40,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE "KUKA_KSS_RSI_DRIVER_BUILDING
 # prevent pluginlib from using boost
 target_compile_definitions(${PROJECT_NAME} PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 
-ament_target_dependencies(${PROJECT_NAME} hardware_interface base)
+ament_target_dependencies(${PROJECT_NAME} hardware_interface) #base)
 target_link_libraries(${PROJECT_NAME} tinyxml)
 
 add_executable(robot_manager_node

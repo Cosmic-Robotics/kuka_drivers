@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 
-#include "base/shm_pubsub.h"
+// #include "base/shm_pubsub.h"
 #include "hardware_interface/system_interface.hpp"
 #include "kuka_kss_rsi_driver/rsi_command.hpp"
 #include "kuka_kss_rsi_driver/rsi_state.hpp"
@@ -94,8 +94,8 @@ class KukaRSIHardwareInterface : public hardware_interface::SystemInterface {
   std::string in_buffer_;
   std::string out_buffer_;
 
-  cosmic::ShmPublisher<double[7]> command_publisher_;
-  cosmic::ShmPublisher<double[7]> state_publisher_;
+  //   cosmic::ShmPublisher<double[7]> command_publisher_;
+  //   cosmic::ShmPublisher<double[7]> state_publisher_;
 
   static constexpr double R2D = 180 / M_PI;
   static constexpr double D2R = M_PI / 180;

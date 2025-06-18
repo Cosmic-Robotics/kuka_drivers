@@ -107,16 +107,16 @@ CallbackReturn KukaRSIHardwareInterface::on_activate(
   server_->set_timeout(
       10000);  // Set receive timeout to 10 seconds for activation
 
-  auto pub_or = cosmic::ShmPublisher<double[7]>::Make("command_angles", 8, 64);
-  if (!pub_or.ok()) {
-    throw std::runtime_error("could not create command angles shm");
-  }
-  command_publisher_ = std::move(*pub_or);
-  pub_or = cosmic::ShmPublisher<double[7]>::Make("state_angles", 8, 64);
-  if (!pub_or.ok()) {
-    throw std::runtime_error("could not create state angles shm");
-  }
-  state_publisher_ = std::move(*pub_or);
+  // auto pub_or = cosmic::ShmPublisher<double[7]>::Make("command_angles", 8,
+  // 64); if (!pub_or.ok()) {
+  //   throw std::runtime_error("could not create command angles shm");
+  // }
+  // command_publisher_ = std::move(*pub_or);
+  // pub_or = cosmic::ShmPublisher<double[7]>::Make("state_angles", 8, 64);
+  // if (!pub_or.ok()) {
+  //   throw std::runtime_error("could not create state angles shm");
+  // }
+  // state_publisher_ = std::move(*pub_or);
 
   RCLCPP_INFO(rclcpp::get_logger("KukaRSIHardwareInterface"),
               "Connecting to robot . . .");
@@ -186,10 +186,10 @@ return_type KukaRSIHardwareInterface::read(const rclcpp::Time &,
   }
 
   ipoc_ = rsi_state_.ipoc;
-  double vals[7];
-  vals[0] = static_cast<double>(ipoc_);
-  std::memcpy(vals + 1, hw_states_.data(), 6 * sizeof(double));
-  state_publisher_.Write(reinterpret_cast<const double(*)[7]>(vals));
+  // double vals[7];
+  // vals[0] = static_cast<double>(ipoc_);
+  // std::memcpy(vals + 1, hw_states_.data(), 6 * sizeof(double));
+  // state_publisher_.Write(reinterpret_cast<const double(*)[7]>(vals));
   return return_type::OK;
 }
 
@@ -241,13 +241,14 @@ return_type KukaRSIHardwareInterface::write(const rclcpp::Time &,
 
   hw_commands_prev_ = hw_commands_;
 
-  double vals[7];
-  vals[0] = static_cast<double>(ipoc_);
+  // double vals[7];
+  // vals[0] = static_cast<double>(ipoc_);
   // for (size_t i{0}; i < 6; ++i)
   //   vals[i + 1] = std::accumulate(hw_commands_variance_[i].cbegin(),
   //                                 hw_commands_variance_[i].cend(), 0.);
-  std::memcpy(vals + 1, joint_pos_correction_deg_.data(), 6 * sizeof(double));
-  command_publisher_.Write(reinterpret_cast<const double(*)[7]>(vals));
+  // std::memcpy(vals + 1, joint_pos_correction_deg_.data(), 6 *
+  // sizeof(double)); command_publisher_.Write(reinterpret_cast<const
+  // double(*)[7]>(vals));
 
   out_buffer_ =
       RSICommand(joint_pos_correction_deg_, ipoc_, stop_flag_).xml_doc;
