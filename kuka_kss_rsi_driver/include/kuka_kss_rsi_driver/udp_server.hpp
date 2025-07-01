@@ -90,7 +90,7 @@ class UDPServer {
   }
 
   ssize_t send(std::string &buffer) {
-    static constexpr int kNumAttempts = 2;
+    static constexpr int kNumAttempts = 3;
     ssize_t bytes = 0;
     for (int i = 0; i < kNumAttempts; ++i) {
       bytes = sendto(sockfd_, buffer.c_str(), buffer.size(), 0,
