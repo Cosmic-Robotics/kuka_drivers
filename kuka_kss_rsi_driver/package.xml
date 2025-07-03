@@ -18,7 +18,7 @@
   <depend>controller_manager_msgs</depend>
   <depend>std_msgs</depend>
 
-  <depend>base</depend>
+  <depend>core</depend>
 
   <depend>tinyxml_vendor</depend>
 
