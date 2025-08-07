@@ -23,7 +23,7 @@
 
 namespace kuka_kss_rsi_driver {
 CallbackReturn KukaRSIHardwareInterface::on_init(
-    const hardware_interface::HardwareInfo &info) {
+    const hardware_interface::HardwareInfo& info) {
   if (hardware_interface::SystemInterface::on_init(info) !=
       CallbackReturn::SUCCESS) {
     return CallbackReturn::ERROR;
@@ -32,7 +32,7 @@ CallbackReturn KukaRSIHardwareInterface::on_init(
   hw_states_.resize(info_.joints.size(), 0.0);
   hw_commands_.resize(info_.joints.size(), 0.0);
 
-  for (const hardware_interface::ComponentInfo &joint : info_.joints) {
+  for (const hardware_interface::ComponentInfo& joint : info_.joints) {
     if (joint.command_interfaces.size() != 1) {
       RCLCPP_FATAL(rclcpp::get_logger("KukaRSIHardwareInterface"),
                    "expecting exactly 1 command interface");
@@ -58,6 +58,13 @@ CallbackReturn KukaRSIHardwareInterface::on_init(
       return CallbackReturn::ERROR;
     }
   }
+
+  auto publisher_or =
+      cosmic::shm::Publisher<bool>::Make("kuka_hw_iface", sizeof(bool), 1, 1);
+  if (!publisher_or.ok()) {
+    throw std::runtime_error("could not open shm publisher");
+  }
+  ready_publisher_ = std::move(*publisher_or);
 
   // RSI
   in_buffer_.resize(1024);
@@ -100,7 +107,7 @@ KukaRSIHardwareInterface::export_command_interfaces() {
 }
 
 CallbackReturn KukaRSIHardwareInterface::on_activate(
-    const rclcpp_lifecycle::State &) {
+    const rclcpp_lifecycle::State&) {
   stop_flag_ = false;
   // Wait for connection from robot
   server_.reset(new UDPServer(rsi_ip_address_, rsi_port_));
@@ -121,6 +128,9 @@ CallbackReturn KukaRSIHardwareInterface::on_activate(
   RCLCPP_INFO(rclcpp::get_logger("KukaRSIHardwareInterface"),
               "Connecting to robot . . .");
 
+  RCLCPP_INFO(rclcpp::get_logger("hw_iface"), "trying to write...");
+  ready_publisher_.Write();
+  RCLCPP_INFO(rclcpp::get_logger("hw_iface"), "\twrote!");
   int bytes = server_->recv(in_buffer_);
   if (bytes == 0) {
     RCLCPP_ERROR(rclcpp::get_logger("KukaRSIHardwareInterface"),
@@ -159,17 +169,16 @@ CallbackReturn KukaRSIHardwareInterface::on_activate(
 }
 
 CallbackReturn KukaRSIHardwareInterface::on_deactivate(
-    const rclcpp_lifecycle::State &) {
+    const rclcpp_lifecycle::State&) {
   stop_flag_ = true;
   RCLCPP_INFO(rclcpp::get_logger("KukaRSIHardwareInterface"),
               "Stop flag was set!");
   return CallbackReturn::SUCCESS;
 }
 
-return_type KukaRSIHardwareInterface::read(const rclcpp::Time &,
-                                           const rclcpp::Duration &) {
+return_type KukaRSIHardwareInterface::read(const rclcpp::Time&,
+                                           const rclcpp::Duration&) {
   if (!is_active_) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(2));
     return return_type::OK;
   }
 
@@ -193,8 +202,8 @@ return_type KukaRSIHardwareInterface::read(const rclcpp::Time &,
   return return_type::OK;
 }
 
-return_type KukaRSIHardwareInterface::write(const rclcpp::Time &,
-                                            const rclcpp::Duration &) {
+return_type KukaRSIHardwareInterface::write(const rclcpp::Time&,
+                                            const rclcpp::Duration&) {
   // It is possible, that write is called immediately after activation
   // In this case write in that tick should be skipped to be able to read state
   // at first First cycle (with 0 ipoc) is handled in the on_activate method, so

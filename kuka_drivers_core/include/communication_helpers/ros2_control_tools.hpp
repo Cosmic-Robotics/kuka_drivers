@@ -36,7 +36,7 @@ bool changeHardwareState(
   hw_request->name = hardware_name;
   hw_request->target_state.id = state;
   auto hw_response = sendRequest<controller_manager_msgs::srv::SetHardwareComponentState::Response>(
-    client, hw_request, 0, timeout_ms);
+    client, hw_request, 3000, timeout_ms);
   if (!hw_response || !hw_response->ok)
   {
     return false;
@@ -57,7 +57,7 @@ bool changeControllerState(
   controller_request->deactivate_controllers = deactivate_controllers;
 
   auto controller_response = sendRequest<controller_manager_msgs::srv::SwitchController::Response>(
-    client, controller_request, 0, 2000);
+    client, controller_request, 3000, 2000);
   if (!controller_response || !controller_response->ok)
   {
     return false;

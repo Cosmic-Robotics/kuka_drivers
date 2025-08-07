@@ -22,7 +22,6 @@
 #include <string>
 #include <vector>
 
-// #include "base/shm_pubsub.h"
 #include "hardware_interface/system_interface.hpp"
 #include "kuka_kss_rsi_driver/rsi_command.hpp"
 #include "kuka_kss_rsi_driver/rsi_state.hpp"
@@ -32,6 +31,7 @@
 #include "rclcpp/macros.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/state.hpp"
+#include "shm/pubsub.h"
 
 using hardware_interface::return_type;
 using CallbackReturn =
@@ -94,6 +94,7 @@ class KukaRSIHardwareInterface : public hardware_interface::SystemInterface {
   std::string in_buffer_;
   std::string out_buffer_;
 
+  cosmic::shm::Publisher<bool> ready_publisher_;
   //   cosmic::ShmPublisher<double[7]> command_publisher_;
   //   cosmic::ShmPublisher<double[7]> state_publisher_;
 
